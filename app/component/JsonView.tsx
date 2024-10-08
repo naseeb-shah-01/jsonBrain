@@ -20,19 +20,18 @@ const CompareJSONKeys: React.FC = () => {
   // Function to compare keys in two objects
 // Function to compare keys in two objects, handling nested objects or arrays
 function compareKeys(objA: any, objB: any) {
-  const keysA = new Set(Object.keys(objA));
-  const keysB = new Set(Object.keys(objB));
+  
 
   const missingInB: string[] = [];
   const missingInA: string[] = [];
 
   // Helper function to recursively compare nested objects
   function compareNestedKeys(a: any, b: any, path: string = "") {
-    const keysA = new Set(Object.keys(a));
-    const keysB = new Set(Object.keys(b));
+    const keysA :any= new Set(Object.keys(a));
+    const keysB :any = new Set(Object.keys(b));
 
     // Check keys in A but missing in B
-    keysA.forEach((key) => {
+    keysA.forEach((key:any) => {
       const fullPath = path ? `${path}.${key}` : key;
       if (!keysB.has(key)) {
         missingInB.push(fullPath);
@@ -42,7 +41,7 @@ function compareKeys(objA: any, objB: any) {
     });
 
     // Check keys in B but missing in A
-    keysB.forEach((key) => {
+    keysB.forEach((key:any) => {
       const fullPath = path ? `${path}.${key}` : key;
       if (!keysA.has(key)) {
         missingInA.push(fullPath);
@@ -68,6 +67,7 @@ function compareKeys(objA: any, objB: any) {
       const comparisonResult = compareKeys(parsedA, parsedB);
       setResult(comparisonResult);
     } catch (error) {
+      console.log(error);
       alert("Please enter valid JSON in both fields.");
     }
   };
