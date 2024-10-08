@@ -17,51 +17,56 @@ const CompareJSONKeys: React.FC = () => {
     extraInBody: [],
   });
 
-  // Function to compare keys in two objects
-// Function to compare keys in two objects, handling nested objects or arrays
-function compareKeys(objA: any, objB: any) {
-  
+  // Function to compare keys in two objects, handling nested objects or arrays
+  function compareKeys(objA: Record<string, unknown>, objB: Record<string, unknown>) {
+    const missingInB: string[] = [];
+    const missingInA: string[] = [];
 
-  const missingInB: string[] = [];
-  const missingInA: string[] = [];
-
-  // Helper function to recursively compare nested objects
-  function compareNestedKeys(a: any, b: any, path: string = "") {
-    const keysA :any= new Set(Object.keys(a));
-    const keysB :any = new Set(Object.keys(b));
-
-    // Check keys in A but missing in B
-    keysA.forEach((key:any) => {
-      const fullPath = path ? `${path}.${key}` : key;
-      if (!keysB.has(key)) {
-        missingInB.push(fullPath);
-      } else if (typeof a[key] === "object" && typeof b[key] === "object") {
-        compareNestedKeys(a[key], b[key], fullPath);
+    // Helper function to recursively compare nested objects
+    function compareNestedKeys(a: unknown, b: unknown, path: string = "") {
+      if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) {
+        return;
       }
-    });
 
-    // Check keys in B but missing in A
-    keysB.forEach((key:any) => {
-      const fullPath = path ? `${path}.${key}` : key;
-      if (!keysA.has(key)) {
-        missingInA.push(fullPath);
-      }
-    });
+      const keysA = new Set(Object.keys(a as Record<string, unknown>));
+      const keysB = new Set(Object.keys(b as Record<string, unknown>));
+
+      // Check keys in A but missing in B
+      keysA.forEach((key) => {
+        const fullPath = path ? `${path}.${key}` : key;
+        if (!keysB.has(key)) {
+          missingInB.push(fullPath);
+        } else if (
+          typeof (a as Record<string, unknown>)[key] === "object" &&
+          typeof (b as Record<string, unknown>)[key] === "object" &&
+          !Array.isArray((a as Record<string, unknown>)[key]) &&
+          !Array.isArray((b as Record<string, unknown>)[key])
+        ) {
+          compareNestedKeys((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key], fullPath);
+        }
+      });
+
+      // Check keys in B but missing in A
+      keysB.forEach((key) => {
+        const fullPath = path ? `${path}.${key}` : key;
+        if (!keysA.has(key)) {
+          missingInA.push(fullPath);
+        }
+      });
+    }
+
+    compareNestedKeys(objA, objB);
+
+    return {
+      extraInPayload: missingInB,
+      extraInBody: missingInA,
+    };
   }
-
-  compareNestedKeys(objA, objB);
-
-  return {
-    extraInPayload: missingInB,
-    extraInBody: missingInA,
-  };
-}
-
 
   const handleCompare = () => {
     try {
-      const parsedA = JSON.parse(jsonA);
-      const parsedB = JSON.parse(jsonB);
+      const parsedA = JSON.parse(jsonA) as Record<string, unknown>;
+      const parsedB = JSON.parse(jsonB) as Record<string, unknown>;
 
       // Compare the keys of both objects
       const comparisonResult = compareKeys(parsedA, parsedB);
